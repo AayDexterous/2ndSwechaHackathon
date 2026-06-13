@@ -34,6 +34,10 @@ app.include_router(fastapi_users.get_reset_password_router(), prefix="/auth", ta
 app.include_router(fastapi_users.get_verify_router(UserRead), prefix="/auth", tags=["auth"])
 app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix="/users", tags=["users"])
 
+@app.get("/")
+async def read_root():
+    return {"message": "QuickPic Backend is up and running!"}
+
 @app.post("/upload")
 async def upload_file(
     file: UploadFile = File(...), 
