@@ -8,11 +8,90 @@ st.set_page_config(page_title="Simple Social", layout="wide")
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
-# Initialize session state
+# Translation catalogs for English and Hindi
+TRANSLATIONS = {
+    "en": {
+        "login_title": "🚀 Welcome to Simple Social",
+        "email": "Email:",
+        "password": "Password:",
+        "login_btn": "Login",
+        "signup_btn": "Sign Up",
+        "login_err": "Invalid email or password!",
+        "user_info_err": "Failed to get user info",
+        "signup_success": "Account created! Click Login now.",
+        "signup_err": "Registration failed: {detail}",
+        "signup_input_prompt": "Enter your email and password above",
+        "upload_title": "📸 Share Something",
+        "choose_media": "Choose media",
+        "caption": "Caption:",
+        "caption_placeholder": "What's on your mind?",
+        "share_btn": "Share",
+        "uploading": "Uploading...",
+        "posted": "Posted!",
+        "upload_err": "Upload failed!",
+        "feed_title": "🏠 Feed",
+        "no_posts": "No posts yet! Be the first to share something.",
+        "post_deleted": "Post deleted!",
+        "delete_err": "Failed to delete post!",
+        "feed_err": "Failed to load feed",
+        "hi_user": "👋 Hi {email}!",
+        "logout": "Logout",
+        "navigate": "Navigate:",
+        "nav_feed": "🏠 Feed",
+        "nav_upload": "📸 Upload",
+    },
+    "hi": {
+        "login_title": "🚀 सिंपल सोशल में आपका स्वागत है",
+        "email": "ईमेल:",
+        "password": "पासवर्ड:",
+        "login_btn": "लॉग इन",
+        "signup_btn": "साइन अप",
+        "login_err": "अमान्य ईमेल या पासवर्ड!",
+        "user_info_err": "उपयोगकर्ता की जानकारी प्राप्त करने में विफल",
+        "signup_success": "खाता बन गया! अब लॉग इन करें।",
+        "signup_err": "पंजीकरण विफल: {detail}",
+        "signup_input_prompt": "ऊपर अपना ईमेल और पासवर्ड दर्ज करें",
+        "upload_title": "📸 कुछ साझा करें",
+        "choose_media": "मीडिया चुनें",
+        "caption": "कैप्शन:",
+        "caption_placeholder": "आपके मन में क्या है?",
+        "share_btn": "साझा करें",
+        "uploading": "अपलोड हो रहा है...",
+        "posted": "साझा कर दिया गया!",
+        "upload_err": "अपलोड विफल रहा!",
+        "feed_title": "🏠 फ़ीड",
+        "no_posts": "अभी तक कोई पोस्ट नहीं है! कुछ साझा करने वाले पहले व्यक्ति बनें।",
+        "post_deleted": "पोस्ट हटा दी गई!",
+        "delete_err": "पोस्ट हटाने में विफल!",
+        "feed_err": "फ़ीड लोड करने में विफल",
+        "hi_user": "👋 नमस्ते {email}!",
+        "logout": "लॉग आउट",
+        "navigate": "नेविगेट करें:",
+        "nav_feed": "🏠 फ़ीड",
+        "nav_upload": "📸 अपलोड",
+    }
+}
+
+# Initialize session state variables
 if 'token' not in st.session_state:
     st.session_state.token = None
 if 'user' not in st.session_state:
     st.session_state.user = None
+if 'lang' not in st.session_state:
+    st.session_state.lang = "en"
+
+# Display a language toggle selectbox at the top right corner
+col_spacer, col_lang = st.columns([5, 1.2])
+with col_lang:
+    selected_lang = st.selectbox(
+        "🌐 Language / भाषा",
+        ["English", "हिंदी"],
+        index=0 if st.session_state.lang == "en" else 1,
+        key="lang_selector"
+    )
+    st.session_state.lang = "en" if selected_lang == "English" else "hi"
+
+lang = st.session_state.lang
 
 
 def get_headers():
@@ -23,17 +102,17 @@ def get_headers():
 
 
 def login_page():
-    st.title("🚀 Welcome to Simple Social")
+    st.title(TRANSLATIONS[lang]["login_title"])
 
     # Simple form with two buttons
-    email = st.text_input("Email:")
-    password = st.text_input("Password:", type="password")
+    email = st.text_input(TRANSLATIONS[lang]["email"])
+    password = st.text_input(TRANSLATIONS[lang]["password"], type="password")
 
     if email and password:
         col1, col2 = st.columns(2)
 
         with col1:
-            if st.button("Login", type="primary", use_container_width=True):
+            if st.button(TRANSLATIONS[lang]["login_btn"], type="primary", use_container_width=True):
                 # Login using FastAPI Users JWT endpoint
                 login_data = {"username": email, "password": password}
                 response = requests.post(f"{BACKEND_URL}/auth/jwt/login", data=login_data)
@@ -48,42 +127,42 @@ def login_page():
                         st.session_state.user = user_response.json()
                         st.rerun()
                     else:
-                        st.error("Failed to get user info")
+                        st.error(TRANSLATIONS[lang]["user_info_err"])
                 else:
-                    st.error("Invalid email or password!")
+                    st.error(TRANSLATIONS[lang]["login_err"])
 
         with col2:
-            if st.button("Sign Up", type="secondary", use_container_width=True):
+            if st.button(TRANSLATIONS[lang]["signup_btn"], type="secondary", use_container_width=True):
                 # Register using FastAPI Users
                 signup_data = {"email": email, "password": password}
                 response = requests.post(f"{BACKEND_URL}/auth/register", json=signup_data)
 
                 if response.status_code == 201:
-                    st.success("Account created! Click Login now.")
+                    st.success(TRANSLATIONS[lang]["signup_success"])
                 else:
                     error_detail = response.json().get("detail", "Registration failed")
-                    st.error(f"Registration failed: {error_detail}")
+                    st.error(TRANSLATIONS[lang]["signup_err"].format(detail=error_detail))
     else:
-        st.info("Enter your email and password above")
+        st.info(TRANSLATIONS[lang]["signup_input_prompt"])
 
 
 def upload_page():
-    st.title("📸 Share Something")
+    st.title(TRANSLATIONS[lang]["upload_title"])
 
-    uploaded_file = st.file_uploader("Choose media", type=['png', 'jpg', 'jpeg', 'mp4', 'avi', 'mov', 'mkv', 'webm'])
-    caption = st.text_area("Caption:", placeholder="What's on your mind?")
+    uploaded_file = st.file_uploader(TRANSLATIONS[lang]["choose_media"], type=['png', 'jpg', 'jpeg', 'mp4', 'avi', 'mov', 'mkv', 'webm'])
+    caption = st.text_area(TRANSLATIONS[lang]["caption"], placeholder=TRANSLATIONS[lang]["caption_placeholder"])
 
-    if uploaded_file and st.button("Share", type="primary"):
-        with st.spinner("Uploading..."):
+    if uploaded_file and st.button(TRANSLATIONS[lang]["share_btn"], type="primary"):
+        with st.spinner(TRANSLATIONS[lang]["uploading"]):
             files = {"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
             data = {"caption": caption}
             response = requests.post(f"{BACKEND_URL}/upload", files=files, data=data, headers=get_headers())
 
             if response.status_code == 200:
-                st.success("Posted!")
+                st.success(TRANSLATIONS[lang]["posted"])
                 st.rerun()
             else:
-                st.error("Upload failed!")
+                st.error(TRANSLATIONS[lang]["upload_err"])
 
 
 def encode_text_for_overlay(text):
@@ -115,14 +194,14 @@ def create_transformed_url(original_url, transformation_params, caption=None):
 
 
 def feed_page():
-    st.title("🏠 Feed")
+    st.title(TRANSLATIONS[lang]["feed_title"])
 
     response = requests.get(f"{BACKEND_URL}/feed", headers=get_headers())
     if response.status_code == 200:
         posts = response.json()["posts"]
 
         if not posts:
-            st.info("No posts yet! Be the first to share something.")
+            st.info(TRANSLATIONS[lang]["no_posts"])
             return
 
         for post in posts:
@@ -138,10 +217,10 @@ def feed_page():
                         # Delete the post
                         response = requests.delete(f"{BACKEND_URL}/posts/{post['id']}", headers=get_headers())
                         if response.status_code == 200:
-                            st.success("Post deleted!")
+                            st.success(TRANSLATIONS[lang]["post_deleted"])
                             st.rerun()
                         else:
-                            st.error("Failed to delete post!")
+                            st.error(TRANSLATIONS[lang]["delete_err"])
 
             # Uniform media display with caption overlay
             caption = post.get('caption', '')
@@ -156,7 +235,7 @@ def feed_page():
 
             st.markdown("")  # Space between posts
     else:
-        st.error("Failed to load feed")
+        st.error(TRANSLATIONS[lang]["feed_err"])
 
 
 # Main app logic
@@ -164,17 +243,33 @@ if st.session_state.user is None:
     login_page()
 else:
     # Sidebar navigation
-    st.sidebar.title(f"👋 Hi {st.session_state.user['email']}!")
+    welcome_text = TRANSLATIONS[lang]["hi_user"].format(email=st.session_state.user['email'])
+    st.sidebar.title(welcome_text)
 
-    if st.sidebar.button("Logout"):
+    if st.sidebar.button(TRANSLATIONS[lang]["logout"]):
         st.session_state.user = None
         st.session_state.token = None
         st.rerun()
 
     st.sidebar.markdown("---")
-    page = st.sidebar.radio("Navigate:", ["🏠 Feed", "📸 Upload"])
+    
+    # Track selection index to prevent reset when changing languages
+    if 'selected_idx' not in st.session_state:
+        st.session_state.selected_idx = 0
+        
+    nav_feed_str = TRANSLATIONS[lang]["nav_feed"]
+    nav_upload_str = TRANSLATIONS[lang]["nav_upload"]
+    
+    page = st.sidebar.radio(
+        TRANSLATIONS[lang]["navigate"],
+        [nav_feed_str, nav_upload_str],
+        index=st.session_state.selected_idx
+    )
+    
+    # Update index in session state
+    st.session_state.selected_idx = 0 if page == nav_feed_str else 1
 
-    if page == "🏠 Feed":
+    if page == nav_feed_str:
         feed_page()
     else:
         upload_page()
