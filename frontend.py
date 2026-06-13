@@ -253,11 +253,21 @@ else:
 
     st.sidebar.markdown("---")
     
-    # Translated radio selection labels
+    # Track selection index to prevent reset when changing languages
+    if 'selected_idx' not in st.session_state:
+        st.session_state.selected_idx = 0
+        
     nav_feed_str = TRANSLATIONS[lang]["nav_feed"]
     nav_upload_str = TRANSLATIONS[lang]["nav_upload"]
     
-    page = st.sidebar.radio(TRANSLATIONS[lang]["navigate"], [nav_feed_str, nav_upload_str])
+    page = st.sidebar.radio(
+        TRANSLATIONS[lang]["navigate"],
+        [nav_feed_str, nav_upload_str],
+        index=st.session_state.selected_idx
+    )
+    
+    # Update index in session state
+    st.session_state.selected_idx = 0 if page == nav_feed_str else 1
 
     if page == nav_feed_str:
         feed_page()
