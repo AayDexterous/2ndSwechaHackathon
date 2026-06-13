@@ -1,4 +1,5 @@
 from fastapi import FastAPI,HTTPException, File, UploadFile, Form, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from app.schemas import PostCreate, PostResponse, UserRead, UserCreate, UserUpdate
 from app.db import Post, create_db_and_tables, get_async_session, User
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +19,15 @@ async  def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(fastapi_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"])
 app.include_router(fastapi_users.get_register_router(UserRead, UserCreate), prefix="/auth", tags=["auth"])
 app.include_router(fastapi_users.get_reset_password_router(), prefix="/auth", tags=["auth"])

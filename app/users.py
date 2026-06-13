@@ -1,3 +1,4 @@
+import os
 import uuid
 from typing import Optional
 from fastapi import Depends, Request
@@ -10,7 +11,7 @@ from fastapi_users.authentication import (
 from fastapi_users.db import SQLAlchemyUserDatabase
 from app.db import User, get_user_db
 
-SECRET = "aP9kL2fX8qZr"
+SECRET = os.getenv("SECRET_KEY", "aP9kL2fX8qZr")
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
