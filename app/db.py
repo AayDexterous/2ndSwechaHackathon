@@ -1,3 +1,4 @@
+import os
 from collections.abc import AsyncGenerator
 import uuid
 
@@ -9,8 +10,8 @@ from datetime import datetime
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID,SQLAlchemyUserDatabase
 from fastapi import Depends
 
-DATABASE_URL="sqlite+aiosqlite:///./test.db"
-#change above string to change databse from local test.db file to an online one
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./test.db")
+
 
 class Base(DeclarativeBase):
     pass
